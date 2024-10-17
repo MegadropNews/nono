@@ -85,7 +85,7 @@ class NotPixTod:
         ]
         self.block = {
             "#000000": [
-                [ci(650, 934), ci(651, 934)],
+                [ci(655, 941), ci(656, 941)],
             ]
         }
 
@@ -128,7 +128,7 @@ def claim(header, session):
     try:
         session.get(f"{url}/mining/claim", headers=header, timeout=10)
     except requests.exceptions.RequestException as e:
-        log_message("Gagal Gus, Pokoke Sing Sabar", Fore.RED)  # Change the error message here
+        log_message("Gagal Gus, Pokoke Sing Sabar", Fore.RED)
 
 # Function to calculate pixel index based on x, y position
 def get_pixel(x, y):
@@ -150,8 +150,8 @@ start_y = 386
 def main(auth, account, notpixtod):
     headers = {'authorization': auth}
     try:
-        # Create a new session with a random proxy and a fake user-agent
-        proxy = random.choice(notpixtod.proxies)
+        # Create a new session with a specific proxy and a fake user-agent
+        proxy = notpixtod.proxies[0]  # Use the first (and only) proxy for this account
         session = get_session_with_retries(proxy=proxy)
         
         # Extract username from initData (or generate fake data with Faker)
@@ -223,11 +223,15 @@ def main(auth, account, notpixtod):
     # Add an extra line for spacing between accounts
     print()
 
-# Process accounts and manage sleep logic
+# Process accounts and assign proxies sequentially
 def process_accounts(accounts, proxies, proxy_country_map):
-    for account in accounts:
-        notpixtod = NotPixTod(0, proxies, proxy_country_map)  # Create an instance of NotPixTod with proxies and country map
-        main(account, account, notpixtod)  # Pass notpixtod to the main function
+    for index, account in enumerate(accounts):
+        # Ensure proxies and accounts are aligned
+        if index < len(proxies):
+            notpixtod = NotPixTod(index, [proxies[index]], proxy_country_map)  # Use the corresponding proxy for the account
+            main(account, account, notpixtod)  # Pass notpixtod to the main function
+        else:
+            log_message(f"Not enough proxies for account {index + 1}", Fore.RED)
 
 # Function to extract the username from the URL-encoded init data
 def extract_username_from_initdata(init_data):
