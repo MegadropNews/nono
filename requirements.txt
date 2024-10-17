@@ -1,0 +1,6 @@
+requests
+fake-useragent
+faker
+setproctitle
+colorama
+urllib3
